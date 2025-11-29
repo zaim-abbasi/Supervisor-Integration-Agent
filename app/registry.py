@@ -22,11 +22,12 @@ def load_registry() -> List[AgentMetadata]:
         ),
         AgentMetadata(
             name="email_priority_agent",
-            description="Analyzes incoming emails and assigns priority.",
-            intents=["email.prioritize"],
+            description="Classifies email-like text into priority levels (high/medium/low) and returns explanations.",
+            intents=["email.priority.classify"],
             type="http",
-            endpoint="https://example.com/email/handle",
-            healthcheck="https://example.com/email/health",
+            endpoint="https://spm-email-priority-agent.onrender.com/handle",
+            healthcheck="https://spm-email-priority-agent.onrender.com/health",
+            timeout_ms=40000,
         ),
         AgentMetadata(
             name="document_summarizer_agent",
