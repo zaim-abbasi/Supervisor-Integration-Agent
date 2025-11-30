@@ -73,6 +73,57 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
     # calling unrelated agents. If none of the heuristics match and the LLM is
     # unavailable, we declare out of scope (no steps).
     lower_q = query.lower()
+    
+    # Onboarding agent heuristics - check for all intents
+    if any(keyword in lower_q for keyword in [
+        "onboard", "onboarding", "new hire", "new employee", 
+        "employee setup", "hire someone", "add employee"
+    ]):
+        return Plan(
+            steps=[
+                PlanStep(
+                    step_id=0,
+                    agent="onboarding_buddy_agent",
+                    intent="onboarding.create",
+                    input_source="user_query",
+                )
+            ]
+        )
+    
+    # Update employee information
+    if any(keyword in lower_q for keyword in [
+        "update employee", "change employee", "modify employee",
+        "edit employee", "update onboarding"
+    ]):
+        return Plan(
+            steps=[
+                PlanStep(
+                    step_id=0,
+                    agent="onboarding_buddy_agent",
+                    intent="onboarding.update",
+                    input_source="user_query",
+                )
+            ]
+        )
+    
+    # Check employee progress/status
+    if any(keyword in lower_q for keyword in [
+        "employee progress", "onboarding progress", "employee status",
+        "check employee", "employee completion", "profile completion",
+        "onboarding status"
+    ]):
+        return Plan(
+            steps=[
+                PlanStep(
+                    step_id=0,
+                    agent="onboarding_buddy_agent",
+                    intent="onboarding.check_progress",
+                    input_source="user_query",
+                )
+            ]
+        )
+    
+    # Task creation heuristics
     if any(keyword in lower_q for keyword in ["create task", "new task", "add task", "task:", "i need to", "implement", "fix bug"]):
         return Plan(
             steps=[
@@ -84,6 +135,7 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
                 )
             ]
         )
+    
     # Check for summarization BEFORE deadline/risk to avoid misrouting
     if any(keyword in lower_q for keyword in ["summary", "summarize", "condense"]):
         return Plan(
@@ -96,6 +148,8 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
                 )
             ]
         )
+    
+    # Deadline monitoring
     if any(keyword in lower_q for keyword in ["deadline", "due date", "risk", "slip"]):
         return Plan(
             steps=[
@@ -107,6 +161,8 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
                 )
             ]
         )
+    
+    # Meeting follow-up
     if any(keyword in lower_q for keyword in ["follow-up", "followup", "action item", "minutes"]):
         return Plan(
             steps=[
@@ -118,17 +174,8 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
                 )
             ]
         )
-    if any(keyword in lower_q for keyword in ["onboard", "onboarding", "new hire"]):
-        return Plan(
-            steps=[
-                PlanStep(
-                    step_id=0,
-                    agent="onboarding_buddy_agent",
-                    intent="onboarding.guide",
-                    input_source="user_query",
-                )
-            ]
-        )
+    
+    # Task dependencies
     if any(keyword in lower_q for keyword in ["dependency", "depends on", "blocked by", "analyze dependencies"]):
         return Plan(
             steps=[
@@ -140,6 +187,8 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
                 )
             ]
         )
+    
+    # Email priority
     if any(keyword in lower_q for keyword in ["email", "inbox", "priority"]):
         return Plan(
             steps=[
@@ -151,6 +200,8 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
                 )
             ]
         )
+    
+    # Progress tracking
     if any(keyword in lower_q for keyword in ["progress", "goal", "task status"]):
         return Plan(
             steps=[
@@ -167,6 +218,7 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
     if client is None:
         # No LLM available and heuristics could not map the query: out of scope.
         return Plan(steps=[])
+    
     agents_summary = [
         {"name": a.name, "description": a.description, "intents": a.intents}
         for a in registry
@@ -177,7 +229,11 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
         'Return ONLY JSON with the shape {"steps":[{"step_id":0,"agent":...,"intent":...,"input_source":...},...]}. '
         "input_source is either 'user_query' or 'step:X.output.result'. "
         "If the request is outside the available agents' scope, return {\"steps\":[]} (empty list) to signal out-of-scope. "
-        "Strictly match agent intents to the user need; avoid generic summarizers unless summarization is explicitly requested."
+        "Strictly match agent intents to the user need; avoid generic summarizers unless summarization is explicitly requested. "
+        "\n\nFor onboarding_buddy_agent:\n"
+        "- Use 'onboarding.create' or 'employee.create' for creating new employees\n"
+        "- Use 'onboarding.update' or 'employee.update' for updating employee information\n"
+        "- Use 'onboarding.check_progress' or 'employee.check_status' for checking employee status or profile completion"
     )
     user_payload = {
         "user_query": query,

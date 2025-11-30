@@ -49,11 +49,19 @@ def load_registry() -> List[AgentMetadata]:
         ),
         AgentMetadata(
             name="onboarding_buddy_agent",
-            description="Guides new employees through onboarding milestones.",
-            intents=["onboarding.guide"],
+            description="Automates employee onboarding by collecting information, setting up access credentials (email, username, password), monitoring profile completion, and sending welcome emails. Creates company email accounts via MailSlurp, generates system credentials, and provides complete access setup details. Handles creating new employees, updating employee information, and checking onboarding progress.",
+            intents=[
+                "onboarding.create",
+                "onboarding.update", 
+                "onboarding.check_progress",
+                "employee.create",
+                "employee.update",
+                "employee.check_status"
+            ],
             type="http",
-            endpoint="https://example.com/onboarding/handle",
-            healthcheck="https://example.com/onboarding/health",
+            endpoint="https://onboardingbuddyagent-production.up.railway.app/execute",
+            healthcheck="https://onboardingbuddyagent-production.up.railway.app/health",
+            timeout_ms=100000,
         ),
         AgentMetadata(
             name="KnowledgeBaseBuilderAgent",
