@@ -583,6 +583,7 @@ def render_home() -> HTMLResponse:
                 setMessages((prev) => [...prev, { role: 'assistant', content: data.answer || 'No answer produced.' }]);
                 setUploadedFiles([]);
                 setFileName('');
+                if (fileInputRef.current) fileInputRef.current.value = '';
               } catch (err) {
                 setStatus('');
                 setError({ message: 'Network error', type: 'network_error' });
@@ -707,6 +708,7 @@ Summarize the attached document`);
                     <div style={{ display: 'grid', gap: 10 }}>
                       <input ref={fileInputRef} type="file" style={{ display: 'none' }} accept=".txt,.md,.json,.csv,.log,.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleFileUpload} />
                       <button type="button" className="file-trigger" onClick={() => fileInputRef.current && fileInputRef.current.click()}>Attach file</button>
+                      {fileName && <span className="file-meta">Attached: {fileName}</span>}
                       <button className="primary" onClick={handleSend} style={{ padding: '12px 18px' }}>Send</button>
                       {error && <div className="small" style={{ color: '#f87171' }}>Error: {error.message}</div>}
                     </div>
