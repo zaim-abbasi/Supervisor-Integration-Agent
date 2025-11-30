@@ -141,6 +141,21 @@ def load_registry() -> List[AgentMetadata]:
             healthcheck="https://budget-tracker-agent.onrender.com/api/health",
             timeout_ms=30000,  # Increased to 30s for Render.com cold starts (docs say 5000ms but that's too short for cold starts)
         ),
+           # Document Reviewer Agent.
+        AgentMetadata(
+            name="document_reviewer_agent",
+            description="Reviews documents (.docx or text) for spelling, grammar, compliance issues, and generates structured feedback.",
+            intents=[
+                "document.review",
+                "document.review.spelling",
+                "document.review.grammar",
+                "document.review.compliance"
+            ],
+            type="http",
+            endpoint="https://document-reviewer-agent.onrender.com/handle",
+            healthcheck="https://document-reviewer-agent.onrender.com/health",
+            timeout_ms=60000,
+        ),
     ]
 
 

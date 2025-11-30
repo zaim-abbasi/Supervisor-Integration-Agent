@@ -481,9 +481,23 @@ def plan_tools_with_llm(query: str, registry: List[AgentMetadata], history: Opti
             ]
         )
 
+    # Document review detection
+    if any(keyword in lower_q for keyword in [
+        "review document", "check spelling", "grammar check", "compliance check",
+        "proofread", "docx", "document review", "review"
+    ]):
+        return Plan(
+            steps=[
+                PlanStep(
+                    step_id=0,
+                    agent="document_reviewer_agent",
+                    intent="document.review",
+                    input_source="user_query",
+                )
+            ]
+        )
     
     
-
     client = _get_openrouter_client()
     if client is None:
         # No LLM available and heuristics could not map the query: out of scope.
